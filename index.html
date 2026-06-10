@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính tiền đánh bài</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Tính tiền đánh bài</h1>
+
+        <div class="form-group">
+            <label for="player-name">Player: </label>
+            <input type="text" id="player-name" placeholder="Tên người chơi">
+            <button class="btn" onclick="addPlayer()">Thêm</button>
+            <button class="btn danger" onclick="clearAll()">Xóa tất cả</button>
+        </div>
+        <ul id="player-list"></ul>
+
+        <button class="btn" onclick="startGame()">Bắt đầu ván mới</button>
+        <ul id="game-history"></ul>
+
+        <div id="score-popup" class="popup">
+            <div class="popup-content">
+                <span class="close" onclick="closePopup()">&times;</span>
+                <h3>Nhập số tiền thắng/thua</h3>
+                <div id="score-inputs"></div>
+                <div class="total-row">
+                    <strong>Tổng số tiền:</strong>
+                    <span id="total-score">0</span>
+                </div>
+                <button class="btn success" onclick="saveGame()">Lưu ván</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
