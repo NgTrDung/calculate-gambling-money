@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính tiền đánh bài</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="page-shell">
+        <div class="top-section">
+            <div class="top-bar">
+                <button
+                    id="theme-toggle"
+                    class="theme-toggle"
+                    type="button"
+                    aria-label="Chuyển sang dark mode"
+                    title="Đổi giao diện"
+                >
+                    <span class="theme-toggle-icon theme-toggle-sun" aria-hidden="true">☀</span>
+                    <span class="theme-toggle-icon theme-toggle-moon" aria-hidden="true">☾</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="bottom-section">
+            <div class="container">
+                <div class="form-group">
+                    <label for="player-name">Player:</label>
+                    <input type="text" id="player-name" placeholder="Tên người chơi">
+                    <button class="btn" onclick="addPlayer()">Thêm</button>
+                    <button class="btn btn-danger" onclick="clearAll()">Xóa tất cả</button>
+                </div>
+                <ul id="player-list"></ul>
+
+                <button class="btn btn-start-game" onclick="startGame()">Bắt đầu ván mới</button>
+                <ul id="game-history"></ul>
+
+                <div id="score-popup" class="popup">
+                    <div class="popup-content">
+                        <span class="close" onclick="closePopup()">&times;</span>
+                        <h3>Nhập số tiền thắng/thua</h3>
+                        <div id="score-inputs"></div>
+                        <div class="total-row">
+                            <strong>Tổng số tiền:</strong>
+                            <span id="total-score">0</span>
+                        </div>
+                        <button class="btn btn-success" onclick="saveGame()">Lưu ván</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/theme.js"></script>
+    <script src="../js/script.js"></script>
+</body>
+</html>

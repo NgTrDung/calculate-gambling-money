@@ -1,0 +1,57 @@
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    .top-section {
+        top: 0;
+    }
+
+    .theme-toggle {
+        width: 2.8rem;
+        height: 2.8rem;
+    }
+
+    .top-bar {
+        padding: 0.65rem 0.75rem;
+    }
+
+    .bottom-section {
+        padding: 0.75rem 0.75rem 1rem;
+    }
+
+    .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .form-group {
+        flex-wrap: wrap;
+    }
+
+    .form-group label {
+        width: 100%;
+    }
+
+    .form-group input[type="text"] {
+        width: 100%;
+    }
+
+    #player-list li p {
+        min-width: 80px;
+    }
+
+    .score-controls {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .score-controls label {
+        text-align: center;
+    }
+
+    .hide-on-mobile {
+        display: none;
+    }
+}
