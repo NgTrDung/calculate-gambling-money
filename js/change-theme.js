@@ -18,7 +18,6 @@
         }
 
         const nextTheme = theme === "dark" ? "light" : "dark";
-
         toggleButton.setAttribute("aria-label", `Chuyển sang ${nextTheme} mode`);
         toggleButton.setAttribute("title", `Đổi sang ${nextTheme} mode`);
     }

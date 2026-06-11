@@ -1,0 +1,36 @@
+<div id="player-modal" class="modal" aria-hidden="true">
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="player-modal-title">
+        <div class="modal-header">
+            <button id="close-player-modal" class="modal-close" type="button" aria-label="Đóng popup">X</button>
+            <h2 id="player-modal-title" class="modal-title">Create Player List</h2>
+        </div>
+
+        <div class="modal-body">
+            <table class="player-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Gender</th>
+                    </tr>
+                </thead>
+                <tbody id="player-table-body">
+                    <tr>
+                        <td><input type="text" name="player-name-1" placeholder="Player name"></td>
+                        <td><input type="text" name="player-gender-1" placeholder="Gender"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" name="player-name-2" placeholder="Player name"></td>
+                        <td><input type="text" name="player-gender-2" placeholder="Gender"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button id="add-player-row" class="add-row-button" type="button" aria-label="Thêm dòng">+</button>
+        </div>
+
+        <div class="modal-footer">
+            <button id="cancel-player-modal" class="btn btn-secondary" type="button">Cancel</button>
+            <button id="confirm-player-modal" class="btn" type="button">OK</button>
+        </div>
+    </div>
+</div>
