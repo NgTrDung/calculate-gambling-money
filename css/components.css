@@ -179,6 +179,11 @@ input[name^="player-name-"].invalid {
     box-shadow: 0 0 0 3px rgba(214, 69, 69, 0.12);
 }
 
+input[name^="player-name-"].duplicate-name {
+    border-color: #f5a623;
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.18);
+}
+
 .gender-card {
     display: inline-flex;
     align-items: center;

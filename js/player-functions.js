@@ -18,7 +18,7 @@
         }
 
         try {
-            const response = await fetch("player-modal.html");
+            const response = await fetch("add-player-modal.html");
 
             if (!response.ok) {
                 throw new Error("Unable to load player modal file.");
@@ -101,6 +101,83 @@
             return `NOTE: có thể sử dụng ${example}, ${uniqueDuplicates[0]}456, ... để dễ phân biệt`;
         }
 
+        function isValidPlayerName(value) {
+            if (!value) return false;
+            const cleaned = sanitizePlayerName(value);
+            return typeof value === 'string' && value.trim().length > 0 && cleaned === value;
+        }
+
+        function getStoredPlayerNames() {
+            return loadPlayersFromStorage().map((player) => player.player_name.trim().toLowerCase()).filter(Boolean);
+        }
+
+        function getDuplicateNameNote() {
+            const nameInputs = Array.from(modalElement.querySelectorAll('input[name^="player-name-"]'));
+            const currentNames = nameInputs.map((input) => input.value.trim()).filter(Boolean);
+            const currentLower = currentNames.map((name) => name.toLowerCase());
+            const storedNames = getStoredPlayerNames();
+
+            const duplicatesInCurrent = currentLower.filter((name, index) => currentLower.indexOf(name) !== index);
+            const duplicatesInStorage = currentLower.filter((name) => storedNames.includes(name));
+            const uniqueDuplicates = Array.from(new Set([...duplicatesInCurrent, ...duplicatesInStorage]));
+
+            if (uniqueDuplicates.length === 0) {
+                return '';
+            }
+
+            const example = `${uniqueDuplicates[0]}123`;
+            return `NOTE: tên trùng hiện tại có thể dùng ${example}, ${uniqueDuplicates[0]}456 ... để dễ phân biệt`;
+        }
+
+        function updateDuplicateHighlights() {
+            const inputs = Array.from(modalElement.querySelectorAll('input[name^="player-name-"]'));
+            const names = inputs.map((input) => input.value.trim());
+            const lowerNames = names.map((name) => name.toLowerCase());
+            const storedNames = getStoredPlayerNames();
+
+            inputs.forEach((input, index) => {
+                const value = names[index];
+                const lower = lowerNames[index];
+                const isDuplicateCurrent = lower && lowerNames.filter((name) => name === lower).length > 1;
+                const isDuplicateStored = lower && storedNames.includes(lower);
+                input.classList.toggle('duplicate-name', isDuplicateCurrent || isDuplicateStored);
+            });
+        }
+
+        function hasDuplicateNames() {
+            const nameInputs = Array.from(modalElement.querySelectorAll('input[name^="player-name-"]'));
+            const currentLower = nameInputs.map((input) => input.value.trim().toLowerCase()).filter(Boolean);
+            const storedNames = getStoredPlayerNames();
+            const hasCurrentDuplicates = currentLower.some((name, index) => currentLower.indexOf(name) !== index);
+            const hasStorageDuplicates = currentLower.some((name) => storedNames.includes(name));
+            return hasCurrentDuplicates || hasStorageDuplicates;
+        }
+
+        // Local storage helpers
+        const STORAGE_KEY = 'player_list';
+
+        function loadPlayersFromStorage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                console.warn('Failed to parse players from storage', e);
+                return [];
+            }
+        }
+
+        function savePlayersToStorage(players) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(players));
+            } catch (e) {
+                console.error('Failed to save players to storage', e);
+            }
+        }
+
+        function generatePlayerId() {
+            return 'p_' + Date.now().toString(36) + '_' + Math.floor(Math.random() * 90000 + 10000);
+        }
+
         function updateGenderSelection(card) {
             const group = card.closest('.gender-card-group');
             if (!group) return;
@@ -121,6 +198,7 @@
                 input.value = clean;
             }
             input.classList.toggle('invalid', hasInvalidPlayerName(input.value));
+            updateDuplicateHighlights();
             const duplicateNote = modalElement.querySelector('#duplicate-note');
             if (duplicateNote) {
                 duplicateNote.textContent = getDuplicateNameNote();
@@ -164,12 +242,32 @@
                 duplicateNote.textContent = getDuplicateNameNote();
             }
 
-            const hasDuplicates = !!getDuplicateNameNote();
+            updateDuplicateHighlights();
+            const hasDuplicates = hasDuplicateNames();
             if (hasDuplicates) {
                 allValid = false;
             }
 
             if (allValid) {
+                // Build player objects and persist to localStorage
+                const rows = Array.from(modalElement.querySelectorAll('#player-table-body tr'));
+                const players = rows.map((row) => {
+                    const nameInput = row.querySelector('input[name^="player-name-"]');
+                    const genderHidden = row.querySelector('input[type="hidden"]');
+                    const name = nameInput ? nameInput.value.trim() : '';
+                    const gender = genderHidden ? genderHidden.value : 'male';
+                    return {
+                        player_id: generatePlayerId(),
+                        player_name: name,
+                        player_gender: gender,
+                    };
+                }).filter(p => p.player_name);
+
+                savePlayersToStorage(players);
+
+                // Dispatch an event so other parts of the app can react
+                document.dispatchEvent(new CustomEvent('players:updated', { detail: { players } }));
+
                 closeModal();
             } else {
                 alert('Tên người chơi không được để trống và không chứa emoji.');
