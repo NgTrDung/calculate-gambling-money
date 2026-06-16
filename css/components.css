@@ -11,11 +11,12 @@
     color: var(--text-color);
     box-shadow: var(--shadow);
     cursor: pointer;
-    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .theme-toggle:hover {
-    transform: translateY(-2px);
+    background: var(--hover-color);
+    box-shadow: var(--shadow), 0 0 8px rgba(0, 0, 0, 0.15);
 }
 
 .theme-toggle-icon {
@@ -147,22 +148,105 @@
     border-bottom: 1px solid var(--border-color);
 }
 
+.player-table td + td {
+    border-left: 1px solid var(--border-color);
+}
+
 .player-table th {
     font-weight: 700;
+    text-align: center;
+}
+
+.gender-card-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+input[name^="player-name-"] {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    background: var(--surface-color);
+    color: var(--text-color);
+}
+
+input[name^="player-name-"].invalid {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 3px rgba(214, 69, 69, 0.12);
+}
+
+.gender-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid transparent;
+    border-radius: calc(var(--border-radius) / 1.5);
+    background: var(--surface-strong);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    min-width: 110px;
+}
+
+.gender-card:hover,
+.gender-card:focus-visible {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.08);
+}
+
+.gender-card.selected {
+    border-color: var(--primary-color);
+    background: var(--hover-color);
+}
+
+.gender-icon {
+    display: inline-block;
+    width: 1.15rem;
+    height: 1.15rem;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.gender-card.gender-male .gender-icon {
+    background-image: url("../static/img/gender/white-icon-male.png");
+}
+
+.gender-card.gender-female .gender-icon {
+    background-image: url("../static/img/gender/white-icon-female.png");
+}
+
+[data-theme="dark"] .gender-card.gender-male .gender-icon {
+    background-image: url("../static/img/gender/black-icon-male.png");
+}
+
+[data-theme="dark"] .gender-card.gender-female .gender-icon {
+    background-image: url("../static/img/gender/black-icon-female.png");
 }
 
 .add-row-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    min-height: 3rem;
+    padding: 0 1rem;
     margin-top: 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 50%;
-    background: transparent;
-    color: var(--text-color);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius);
+    background: var(--primary-color);
+    color: #ffffff;
     cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.add-row-button:hover {
+    transform: translateY(-2px);
+    background: var(--primary-hover);
 }
 
 .modal-footer {
@@ -170,4 +254,30 @@
     justify-content: flex-end;
     gap: 0.75rem;
     padding: 1rem 1.25rem 1.25rem;
+}
+
+.modal-footer-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.duplicate-note {
+    flex: 1;
+    color: var(--muted-text);
+    font-size: 0.95rem;
+    align-self: center;
+    min-height: 1.5rem;
+}
+
+.duplicate-note::before {
+    content: "⚠";
+    display: inline-block;
+    margin-right: 0.5rem;
+    color: #ffcc00;
+    font-weight: 700;
+}
+
+/* Hide the icon when the note is empty */
+.duplicate-note:empty::before {
+    display: none;
 }

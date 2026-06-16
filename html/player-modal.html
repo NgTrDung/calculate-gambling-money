@@ -16,11 +16,35 @@
                 <tbody id="player-table-body">
                     <tr>
                         <td><input type="text" name="player-name-1" placeholder="Player name"></td>
-                        <td><input type="text" name="player-gender-1" placeholder="Gender"></td>
+                        <td>
+                            <div class="gender-card-group" data-name="player-gender-1">
+                                <input type="hidden" name="player-gender-1" value="male">
+                                <div class="gender-card gender-male selected" data-value="male" role="button" tabindex="0">
+                                    <span class="gender-icon"></span>
+                                    <span class="gender-label">Male</span>
+                                </div>
+                                <div class="gender-card gender-female" data-value="female" role="button" tabindex="0">
+                                    <span class="gender-icon"></span>
+                                    <span class="gender-label">Female</span>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                     <tr>
                         <td><input type="text" name="player-name-2" placeholder="Player name"></td>
-                        <td><input type="text" name="player-gender-2" placeholder="Gender"></td>
+                        <td>
+                            <div class="gender-card-group" data-name="player-gender-2">
+                                <input type="hidden" name="player-gender-2" value="male">
+                                <div class="gender-card gender-male selected" data-value="male" role="button" tabindex="0">
+                                    <span class="gender-icon"></span>
+                                    <span class="gender-label">Male</span>
+                                </div>
+                                <div class="gender-card gender-female" data-value="female" role="button" tabindex="0">
+                                    <span class="gender-icon"></span>
+                                    <span class="gender-label">Female</span>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -29,8 +53,11 @@
         </div>
 
         <div class="modal-footer">
-            <button id="cancel-player-modal" class="btn btn-secondary" type="button">Cancel</button>
-            <button id="confirm-player-modal" class="btn" type="button">OK</button>
+            <div id="duplicate-note" class="duplicate-note" aria-live="polite"></div>
+            <div class="modal-footer-actions">
+                <button id="cancel-player-modal" class="btn btn-secondary" type="button">Cancel</button>
+                <button id="confirm-player-modal" class="btn" type="button">OK</button>
+            </div>
         </div>
     </div>
 </div>
