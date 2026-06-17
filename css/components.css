@@ -65,9 +65,55 @@
     background: var(--hover-color);
 }
 
+/* Disabled button appearance and interaction
+   - Reduce opacity, remove hover/transform, block pointer events */
+.btn:disabled,
+.btn[disabled] {
+    opacity: 0.65;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn:disabled:hover,
+.btn[disabled]:hover {
+    transform: none !important;
+}
+
+.btn:disabled:focus,
+.btn[disabled]:focus {
+    outline: none;
+    box-shadow: none !important;
+}
+
 .action-button {
     min-width: 170px;
     box-shadow: var(--shadow);
+}
+
+/* Style the centered Create Player List button to match item cards */
+#create-player-list.action-button {
+    padding: 0.75rem 1.25rem;
+    border-radius: 18px;
+    border: 1px solid rgba(79, 118, 255, 0.18);
+    background: linear-gradient(135deg, rgba(255, 245, 215, 0.96), rgba(224, 236, 255, 0.96));
+    color: #0b2140;
+    font-weight: 700;
+    transition: transform 200ms cubic-bezier(.2,.9,.3,1), box-shadow 200ms ease, background-color 200ms ease;
+}
+
+[data-theme="dark"] #create-player-list.action-button {
+    background: linear-gradient(135deg, rgba(42, 64, 95, 0.96), rgba(20, 29, 46, 0.96));
+    border-color: rgba(106, 166, 255, 0.18);
+    color: #eef4ff;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.28);
+}
+
+#create-player-list.action-button:hover,
+#create-player-list.action-button:focus {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 63px rgba(18, 50, 120, 0.18);
 }
 
 .content-shell {
@@ -83,7 +129,8 @@
     align-items: center;
     justify-content: center;
     padding: 1.5rem;
-    background: var(--overlay-color);
+    /* Make overlay opaque to hide underlying page content */
+    background: rgba(255, 255, 255, 0.92);
 }
 
 .modal.is-open {
@@ -93,10 +140,16 @@
 .modal-dialog {
     position: relative;
     width: min(100%, 760px);
-    background: var(--surface-color);
+    /* Use a solid surface background so modal content is not translucent */
+    background: var(--surface-strong);
     border: 1px solid var(--border-color);
     border-radius: calc(var(--border-radius) + 4px);
     box-shadow: var(--shadow);
+}
+
+/* Dark theme: darker opaque overlay */
+[data-theme="dark"] .modal {
+    background: rgba(6, 10, 16, 0.92);
 }
 
 .modal-header {
@@ -136,6 +189,7 @@
     padding: 1.25rem;
 }
 
+
 .player-table {
     width: 100%;
     border-collapse: collapse;
@@ -144,7 +198,7 @@
 .player-table th,
 .player-table td {
     padding: 0.75rem;
-    text-align: left;
+    text-align: center;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -155,6 +209,35 @@
 .player-table th {
     font-weight: 700;
     text-align: center;
+}
+
+.player-name-cell {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.player-name-cell:hover {
+    background-color: var(--hover-color);
+}
+
+.player-gender-cell {
+    cursor: pointer;
+}
+
+.player-name-edit {
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--primary-color);
+    background: var(--surface-color);
+    color: var(--text-color);
+    width: 100%;
+    max-width: 200px;
+    font-size: inherit;
+}
+
+.player-name-edit:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.12);
 }
 
 .gender-card-group {
@@ -187,6 +270,7 @@ input[name^="player-name-"].duplicate-name {
 .gender-card {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     padding: 0.65rem 0.85rem;
     border: 1px solid transparent;

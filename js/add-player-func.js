@@ -5,13 +5,13 @@
     }
 
     async function loadModalMarkup() {
-        const modalElement = document.getElementById("player-modal");
+        const modalElement = document.getElementById("add-player-modal");
 
         if (modalElement) {
             return modalElement;
         }
 
-        const modalHost = document.getElementById("player-modal-host");
+        const modalHost = document.getElementById("add-player-modal-host");
 
         if (!modalHost) {
             return null;
@@ -25,7 +25,7 @@
             }
 
             modalHost.innerHTML = await response.text();
-            return document.getElementById("player-modal");
+            return document.getElementById("add-player-modal");
         } catch (error) {
             console.error("Failed to load player modal:", error);
             return null;
@@ -35,13 +35,12 @@
     document.addEventListener("DOMContentLoaded", async function () {
         const modalElement = await loadModalMarkup();
         const openButton = document.getElementById("create-player-list");
-        const closeButton = document.getElementById("close-player-modal");
-        const cancelButton = document.getElementById("cancel-player-modal");
-        const confirmButton = document.getElementById("confirm-player-modal");
+        const cancelButton = document.getElementById("cancel-add-player-modal");
+        const confirmButton = document.getElementById("confirm-add-player-modal");
         const addRowButton = document.getElementById("add-player-row");
         const tableBody = document.getElementById("player-table-body");
 
-        if (!modalElement || !openButton || !closeButton || !cancelButton || !confirmButton || !addRowButton || !tableBody) {
+        if (!modalElement || !openButton || !cancelButton || !confirmButton || !addRowButton || !tableBody) {
             return;
         }
 
@@ -51,6 +50,7 @@
 
         function openModal() {
             setModalState(modalElement, true);
+            updateConfirmState();
         }
 
         function createGenderCardRow(rowCount) {
@@ -77,11 +77,18 @@
             const rowElement = document.createElement("tr");
             rowElement.innerHTML = createGenderCardRow(rowCount);
             tableBody.appendChild(rowElement);
+            updateConfirmState();
         }
 
         function sanitizePlayerName(value) {
             const emojiRegex = /\p{Extended_Pictographic}/gu;
             return value.replace(emojiRegex, '').trimStart();
+        }
+
+        function hasEmoji(value) {
+            if (!value) return false;
+            const emojiRegex = /\p{Extended_Pictographic}/u;
+            return emojiRegex.test(value);
         }
 
         function hasInvalidPlayerName(value) {
@@ -92,29 +99,7 @@
         function getDuplicateNameNote() {
             const nameInputs = Array.from(modalElement.querySelectorAll('input[name^="player-name-"]'));
             const names = nameInputs.map((input) => input.value.trim()).filter(Boolean);
-            const duplicates = names.filter((name, index) => names.indexOf(name) !== index);
-            const uniqueDuplicates = Array.from(new Set(duplicates));
-            if (uniqueDuplicates.length === 0) {
-                return '';
-            }
-            const example = `${uniqueDuplicates[0]}123`;
-            return `NOTE: có thể sử dụng ${example}, ${uniqueDuplicates[0]}456, ... để dễ phân biệt`;
-        }
-
-        function isValidPlayerName(value) {
-            if (!value) return false;
-            const cleaned = sanitizePlayerName(value);
-            return typeof value === 'string' && value.trim().length > 0 && cleaned === value;
-        }
-
-        function getStoredPlayerNames() {
-            return loadPlayersFromStorage().map((player) => player.player_name.trim().toLowerCase()).filter(Boolean);
-        }
-
-        function getDuplicateNameNote() {
-            const nameInputs = Array.from(modalElement.querySelectorAll('input[name^="player-name-"]'));
-            const currentNames = nameInputs.map((input) => input.value.trim()).filter(Boolean);
-            const currentLower = currentNames.map((name) => name.toLowerCase());
+            const currentLower = names.map((name) => name.toLowerCase());
             const storedNames = getStoredPlayerNames();
 
             const duplicatesInCurrent = currentLower.filter((name, index) => currentLower.indexOf(name) !== index);
@@ -129,6 +114,16 @@
             return `NOTE: tên trùng hiện tại có thể dùng ${example}, ${uniqueDuplicates[0]}456 ... để dễ phân biệt`;
         }
 
+        function isValidPlayerName(value) {
+            if (!value) return false;
+            const cleaned = sanitizePlayerName(value);
+            return typeof value === 'string' && value.trim().length > 0 && cleaned === value;
+        }
+
+        function getStoredPlayerNames() {
+            return loadPlayersFromStorage().map((player) => player.player_name.trim().toLowerCase()).filter(Boolean);
+        }
+
         function updateDuplicateHighlights() {
             const inputs = Array.from(modalElement.querySelectorAll('input[name^="player-name-"]'));
             const names = inputs.map((input) => input.value.trim());
@@ -136,12 +131,20 @@
             const storedNames = getStoredPlayerNames();
 
             inputs.forEach((input, index) => {
-                const value = names[index];
                 const lower = lowerNames[index];
                 const isDuplicateCurrent = lower && lowerNames.filter((name) => name === lower).length > 1;
                 const isDuplicateStored = lower && storedNames.includes(lower);
                 input.classList.toggle('duplicate-name', isDuplicateCurrent || isDuplicateStored);
             });
+        }
+
+        function updateConfirmState() {
+            if (!confirmButton) return;
+            const inputs = Array.from(modalElement.querySelectorAll('input[name^="player-name-"]'));
+            const hasAny = inputs.some((i) => i.value && i.value.trim().length > 0);
+            confirmButton.disabled = !hasAny;
+            // accessibility: mirror disabled state with aria-disabled
+            confirmButton.setAttribute('aria-disabled', (!hasAny).toString());
         }
 
         function hasDuplicateNames() {
@@ -153,7 +156,6 @@
             return hasCurrentDuplicates || hasStorageDuplicates;
         }
 
-        // Local storage helpers
         const STORAGE_KEY = 'player_list';
 
         function loadPlayersFromStorage() {
@@ -193,16 +195,14 @@
         tableBody.addEventListener('input', function (event) {
             const input = event.target.closest('input[name^="player-name-"]');
             if (!input) return;
-            const clean = sanitizePlayerName(input.value);
-            if (input.value !== clean) {
-                input.value = clean;
-            }
-            input.classList.toggle('invalid', hasInvalidPlayerName(input.value));
+            // Validation now only checks for emoji characters in the name
+            input.classList.toggle('invalid', hasEmoji(input.value));
             updateDuplicateHighlights();
             const duplicateNote = modalElement.querySelector('#duplicate-note');
             if (duplicateNote) {
                 duplicateNote.textContent = getDuplicateNameNote();
             }
+            updateConfirmState();
         });
 
         tableBody.addEventListener('click', function (event) {
@@ -226,14 +226,18 @@
             const nameInputs = modalElement.querySelectorAll('input[name^="player-name-"]');
             let allValid = true;
             nameInputs.forEach((input) => {
-                const cleanValue = sanitizePlayerName(input.value);
-                if (input.value !== cleanValue) {
-                    input.value = cleanValue;
+                const val = input.value;
+                // Skip empty rows
+                if (!val || val.trim().length === 0) {
+                    input.classList.remove('invalid');
+                    return;
                 }
-                const valid = isValidPlayerName(cleanValue);
-                input.classList.toggle('invalid', !valid);
-                if (!valid) {
+                // Only validate emoji presence
+                if (hasEmoji(val)) {
+                    input.classList.add('invalid');
                     allValid = false;
+                } else {
+                    input.classList.remove('invalid');
                 }
             });
 
@@ -249,7 +253,6 @@
             }
 
             if (allValid) {
-                // Build player objects and persist to localStorage
                 const rows = Array.from(modalElement.querySelectorAll('#player-table-body tr'));
                 const players = rows.map((row) => {
                     const nameInput = row.querySelector('input[name^="player-name-"]');
@@ -260,22 +263,19 @@
                         player_id: generatePlayerId(),
                         player_name: name,
                         player_gender: gender,
+                        total_cash: 0,
                     };
                 }).filter(p => p.player_name);
 
                 savePlayersToStorage(players);
-
-                // Dispatch an event so other parts of the app can react
                 document.dispatchEvent(new CustomEvent('players:updated', { detail: { players } }));
-
                 closeModal();
             } else {
-                alert('Tên người chơi không được để trống và không chứa emoji.');
+                alert('Tên người chơi không được chứa emoji.');
             }
         });
 
         openButton.addEventListener("click", openModal);
-        closeButton.addEventListener("click", closeModal);
         cancelButton.addEventListener("click", closeModal);
         addRowButton.addEventListener("click", createRow);
 

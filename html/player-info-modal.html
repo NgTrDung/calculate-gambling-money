@@ -1,0 +1,30 @@
+<div id="player-info-modal" class="modal" aria-hidden="true">
+    <div class="modal-dialog large" role="dialog" aria-modal="true" aria-labelledby="player-info-modal-title">
+        <div class="modal-header">
+            <h2 id="player-info-modal-title" class="modal-title">Thông tin người chơi</h2>
+        </div>
+
+        <div class="modal-body">
+            <div class="player-info-summary">
+                <table class="player-table player-info-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Gender</th>
+                            <th>Total Cash</th>
+                        </tr>
+                    </thead>
+                    <tbody id="player-info-table-body"></tbody>
+                </table>
+                <div id="player-info-empty" class="empty-note">Chưa có người chơi nào. Hãy tạo danh sách người chơi trước.</div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <div class="modal-footer-actions">
+                <button id="cancel-player-info-modal" class="btn btn-secondary" type="button">Cancel</button>
+                <button id="confirm-player-info-modal" class="btn" type="button">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
