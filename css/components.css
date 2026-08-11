@@ -12,6 +12,7 @@
     box-shadow: var(--shadow);
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .theme-toggle:hover {
@@ -48,6 +49,7 @@
     color: #ffffff;
     cursor: pointer;
     transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn:hover {
@@ -121,6 +123,12 @@
     border-radius: var(--border-radius);
 }
 
+body.modal-open {
+    overflow: hidden;
+    overscroll-behavior: none;
+    touch-action: none;
+}
+
 .modal {
     position: fixed;
     inset: 0;
@@ -131,6 +139,7 @@
     padding: 1.5rem;
     /* Make overlay opaque to hide underlying page content */
     background: rgba(255, 255, 255, 0.92);
+    overscroll-behavior: contain;
 }
 
 .modal.is-open {
@@ -140,11 +149,14 @@
 .modal-dialog {
     position: relative;
     width: min(100%, 760px);
+    max-height: min(92vh, 860px);
     /* Use a solid surface background so modal content is not translucent */
     background: var(--surface-strong);
     border: 1px solid var(--border-color);
     border-radius: calc(var(--border-radius) + 4px);
     box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
 }
 
 /* Dark theme: darker opaque overlay */
@@ -187,12 +199,66 @@
 
 .modal-body {
     padding: 1.25rem;
+    overflow-y: auto;
 }
 
+.player-info-note {
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--surface-color);
+}
+
+.player-info-note-title {
+    margin-bottom: 0.45rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--primary-color);
+}
+
+.player-info-note-list {
+    display: grid;
+    gap: 0.3rem;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.player-info-summary {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
 
 .player-table {
     width: 100%;
     border-collapse: collapse;
+}
+
+.player-info-table {
+    table-layout: fixed;
+    min-width: 640px;
+}
+
+.player-info-table th:nth-child(1),
+.player-info-table td:nth-child(1) {
+    width: 14%;
+}
+
+.player-info-table th:nth-child(2),
+.player-info-table td:nth-child(2) {
+    width: 40%;
+}
+
+.player-info-table th:nth-child(3),
+.player-info-table td:nth-child(3) {
+    width: 24%;
+}
+
+.player-info-table th:nth-child(4),
+.player-info-table td:nth-child(4) {
+    width: 22%;
 }
 
 .player-table th,
@@ -211,9 +277,37 @@
     text-align: center;
 }
 
+.player-role-cell {
+    cursor: pointer;
+}
+
+.player-role-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: var(--surface-color);
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.player-role-cell:hover .player-role-badge {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.08);
+}
+
+.player-role-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+    object-fit: contain;
+}
+
 .player-name-cell {
     cursor: pointer;
     transition: background-color 0.2s ease;
+    text-align: left;
 }
 
 .player-name-cell:hover {
@@ -224,6 +318,10 @@
     cursor: pointer;
 }
 
+.player-total-cash-cell {
+    white-space: nowrap;
+}
+
 .player-name-edit {
     padding: 0.5rem 0.75rem;
     border-radius: var(--border-radius);
@@ -231,13 +329,19 @@
     background: var(--surface-color);
     color: var(--text-color);
     width: 100%;
-    max-width: 200px;
+    min-width: 240px;
+    max-width: 320px;
     font-size: inherit;
 }
 
 .player-name-edit:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.12);
+}
+
+.player-name-edit.invalid {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 3px rgba(214, 69, 69, 0.16);
 }
 
 .gender-card-group {
@@ -282,15 +386,69 @@ input[name^="player-name-"].duplicate-name {
     min-width: 110px;
 }
 
+.gender-card.gender-male {
+    background: var(--male-card-bg);
+    border-color: var(--male-card-border);
+    color: var(--male-card-text);
+}
+
+.gender-card.gender-female {
+    background: var(--female-card-bg);
+    border-color: var(--female-card-border);
+    color: var(--female-card-text);
+}
+
 .gender-card:hover,
 .gender-card:focus-visible {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.08);
 }
 
-.gender-card.selected {
-    border-color: var(--primary-color);
-    background: var(--hover-color);
+.gender-card.gender-male:hover,
+.gender-card.gender-male:focus-visible {
+    border-color: var(--male-card-selected-border);
+    box-shadow: 0 0 0 3px rgba(79, 141, 255, 0.16);
+}
+
+.gender-card.gender-female:hover,
+.gender-card.gender-female:focus-visible {
+    border-color: var(--female-card-selected-border);
+    box-shadow: 0 0 0 3px rgba(238, 120, 174, 0.16);
+}
+
+.gender-card.gender-male.selected {
+    border-color: var(--male-card-selected-border);
+    background: var(--male-card-selected-bg);
+    color: var(--male-card-text);
+}
+
+.gender-card.gender-female.selected {
+    border-color: var(--female-card-selected-border);
+    background: var(--female-card-selected-bg);
+    color: var(--female-card-text);
+}
+
+#add-player-modal .gender-card-group .gender-card {
+    opacity: 0.62;
+    transform: scale(0.98);
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+#add-player-modal .gender-card-group .gender-card.selected {
+    opacity: 1;
+    transform: scale(1);
+    font-weight: 700;
+    color: var(--success-color);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18), 0 10px 20px rgba(15, 23, 34, 0.12);
+}
+
+#add-player-modal .gender-card-group .gender-card.selected .gender-icon {
+    filter: brightness(0) saturate(100%) invert(48%) sepia(57%) saturate(627%) hue-rotate(96deg) brightness(95%) contrast(92%);
+}
+
+#add-player-modal .gender-card-group .gender-card:not(.selected):hover,
+#add-player-modal .gender-card-group .gender-card:not(.selected):focus-visible {
+    opacity: 0.85;
 }
 
 .gender-icon {
@@ -343,11 +501,21 @@ input[name^="player-name-"].duplicate-name {
     justify-content: flex-end;
     gap: 0.75rem;
     padding: 1rem 1.25rem 1.25rem;
+    align-items: flex-end;
 }
 
 .modal-footer-actions {
     display: flex;
     gap: 0.75rem;
+}
+
+.add-player-modal-footer {
+    align-items: center;
+}
+
+.add-player-modal-footer .add-row-button {
+    margin-top: 0;
+    flex: 0 0 auto;
 }
 
 .duplicate-note {

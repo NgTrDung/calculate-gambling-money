@@ -18,6 +18,16 @@
     --shadow: 0 20px 40px rgba(36, 52, 71, 0.12);
     --input-shadow: 0 0 0 3px rgba(22, 119, 255, 0.18);
     --border-radius: 12px;
+    --male-card-bg: #eef5ff;
+    --male-card-border: #9dc2ff;
+    --male-card-text: #1f5fbf;
+    --male-card-selected-bg: #d8e8ff;
+    --male-card-selected-border: #4f8dff;
+    --female-card-bg: #fff0f7;
+    --female-card-border: #f5b5d2;
+    --female-card-text: #b34a7d;
+    --female-card-selected-bg: #ffddec;
+    --female-card-selected-border: #ee78ae;
 }
 
 [data-theme="dark"] {
@@ -39,4 +49,14 @@
     --overlay-color: rgba(6, 10, 16, 0.72);
     --shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
     --input-shadow: 0 0 0 3px rgba(106, 166, 255, 0.18);
+    --male-card-bg: rgba(47, 102, 191, 0.18);
+    --male-card-border: rgba(106, 166, 255, 0.4);
+    --male-card-text: #bcd7ff;
+    --male-card-selected-bg: rgba(80, 137, 233, 0.32);
+    --male-card-selected-border: #7eb2ff;
+    --female-card-bg: rgba(181, 74, 125, 0.18);
+    --female-card-border: rgba(238, 120, 174, 0.38);
+    --female-card-text: #ffc6df;
+    --female-card-selected-bg: rgba(238, 120, 174, 0.28);
+    --female-card-selected-border: #ff9bc8;
 }

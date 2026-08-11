@@ -5,10 +5,20 @@
         </div>
 
         <div class="modal-body">
+            <div class="player-info-note">
+                <div class="player-info-note-title">NOTE</div>
+                <div class="player-info-note-list">
+                    <div>- Click value Role để swap host/player</div>
+                    <div>- Click value Name để edit tên player</div>
+                    <div>- Click value Gender để swap giới tính</div>
+                </div>
+            </div>
+
             <div class="player-info-summary">
                 <table class="player-table player-info-table">
                     <thead>
                         <tr>
+                            <th>Role</th>
                             <th>Name</th>
                             <th>Gender</th>
                             <th>Total Cash</th>
@@ -21,6 +31,7 @@
         </div>
 
         <div class="modal-footer">
+            <div id="player-info-warning-note" class="duplicate-note" aria-live="polite"></div>
             <div class="modal-footer-actions">
                 <button id="cancel-player-info-modal" class="btn btn-secondary" type="button">Cancel</button>
                 <button id="confirm-player-info-modal" class="btn" type="button">OK</button>

@@ -63,6 +63,7 @@
     transform-origin: center;
     cursor: pointer;
     position: relative;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .item-card-icon {
@@ -101,6 +102,15 @@
 .item-card:focus-within {
     transform: translateY(-8px);
     box-shadow: 0 24px 63px rgba(18, 50, 120, 0.22);
+}
+
+.item-card:focus {
+    outline: none;
+}
+
+.item-card:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .item-card:active {
