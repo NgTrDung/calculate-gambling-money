@@ -45,7 +45,7 @@ npm run build
 npm run preview
 ```
 
-The generated files are placed in `dist/`. For GitHub Pages, deploy the contents of `dist/` with the repository base path `/calculate-gambling-money/`.
+The generated files are placed in `dist/`. A push to `main` runs the GitHub Pages workflow, which tests the app, builds `dist/`, and deploys it at `https://ngtrdung.github.io/calculate-gambling-money/`.
 
 ## Source structure
 
