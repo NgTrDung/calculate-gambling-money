@@ -1,6 +1,7 @@
-import { HISTORY_KEY } from './history.js'
+import { HISTORY_KEY } from '../features/history/history.js'
+import { GAME_SETTINGS_KEY } from '../features/settings/gameSettings.js'
 
-export const GAME_DATA_KEYS = ['players', HISTORY_KEY]
+export const GAME_DATA_KEYS = ['players', HISTORY_KEY, GAME_SETTINGS_KEY]
 
 export function clearGameData(storage = localStorage) {
   const previous = new Map(GAME_DATA_KEYS.map((key) => [key, storage.getItem(key)]))

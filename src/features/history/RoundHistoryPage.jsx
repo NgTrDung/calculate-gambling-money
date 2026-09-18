@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import Dialog from './Dialog.jsx'
+import Dialog from '../../components/ui/Dialog.jsx'
 import { formatRoundDate, formatSignedPoint, HISTORY_KEY, loadRoundHistory, paginateRoundHistory, sortRoundHistory } from './history.js'
 
 function pointColor(value) {

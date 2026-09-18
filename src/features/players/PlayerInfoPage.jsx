@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
-import Dialog, { HelpButton } from './Dialog.jsx'
+import Dialog, { HelpButton } from '../../components/ui/Dialog.jsx'
+import { formatVnd } from '../settings/gameSettings.js'
 import {
   cleanName,
   getPlayerErrors,
@@ -27,7 +28,7 @@ const nameErrors = {
 
 const formatSignedPoint = (value) => value > 0 ? `+${value}` : String(value)
 
-export default function PlayerInfoPage({ onCancel, onSaved }) {
+export default function PlayerInfoPage({ pointValueVnd, onCancel, onSaved }) {
   const [players, setPlayers] = useState(loadPlayers)
   const [tab, setTab] = useState('active')
   const [pointDrafts, setPointDrafts] = useState({})
@@ -295,7 +296,7 @@ export default function PlayerInfoPage({ onCancel, onSaved }) {
           </div>
         )}
         {saveError && <p role="alert" className="mt-3 text-sm font-medium text-rose-700 dark:text-rose-300">{saveError}</p>}
-        <p className="mt-4 text-center text-xs text-slate-500 dark:text-zinc-400">1 điểm = 1.000đ</p>
+        <p className="mt-4 text-center text-xs text-slate-500 dark:text-zinc-400">1 điểm = {formatVnd(pointValueVnd)}</p>
       </main>
 
       <footer className="shrink-0 border-t border-slate-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900 sm:px-6">

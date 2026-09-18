@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import AddPlayersPage from './AddPlayersPage.jsx'
-import Dialog from './Dialog.jsx'
-import EndRoundPage from './EndRoundPage.jsx'
-import { clearGameData } from './gameStorage.js'
-import PlayerInfoPage from './PlayerInfoPage.jsx'
-import RankingPage from './RankingPage.jsx'
-import RoundHistoryPage from './RoundHistoryPage.jsx'
+import AddPlayersPage from '../features/players/AddPlayersPage.jsx'
+import Dialog from '../components/ui/Dialog.jsx'
+import EndRoundPage from '../features/rounds/EndRoundPage.jsx'
+import { clearGameData } from '../storage/gameStorage.js'
+import { DEFAULT_POINT_VALUE_VND, formatVnd, formatVndNumber, loadPointValueVnd, parsePointValueInput, savePointValueVnd } from '../features/settings/gameSettings.js'
+import PlayerInfoPage from '../features/players/PlayerInfoPage.jsx'
+import RankingPage from '../features/ranking/RankingPage.jsx'
+import RoundHistoryPage from '../features/history/RoundHistoryPage.jsx'
 
 const features = [
   {
@@ -52,6 +53,8 @@ const GAME_TYPES = [
   { id: 'tien-len', label: 'Tiến Lên', available: false },
 ]
 
+const POINT_VALUE_PRESETS = [1000, 2000, 5000, 10000]
+
 function getInitialTheme() {
   try {
     const saved = localStorage.getItem('theme')
@@ -65,6 +68,11 @@ function getInitialTheme() {
 
 export default function App() {
   const [theme, setTheme] = useState(getInitialTheme)
+  const [pointValueVnd, setPointValueVnd] = useState(loadPointValueVnd)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [pointValueDraft, setPointValueDraft] = useState('')
+  const [pointValueFocused, setPointValueFocused] = useState(false)
+  const [settingsError, setSettingsError] = useState('')
   const [selectedFeature, setSelectedFeature] = useState(null)
   const [page, setPage] = useState('main')
   const [selectedGameType, setSelectedGameType] = useState('xi-zach')
@@ -75,7 +83,9 @@ export default function App() {
   const gameMenu = useRef(null)
   const gameButton = useRef(null)
   const deleteButton = useRef(null)
+  const settingsButton = useRef(null)
   const selectedGame = GAME_TYPES.find((game) => game.id === selectedGameType)
+  const parsedPointValue = parsePointValueInput(pointValueDraft)
 
   useLayoutEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
@@ -131,9 +141,29 @@ export default function App() {
     setDeleteError('')
   }
 
+  function openSettings() {
+    setPointValueDraft(String(pointValueVnd))
+    setPointValueFocused(false)
+    setSettingsError('')
+    setSettingsOpen(true)
+  }
+
+  function saveSettings(event) {
+    event.preventDefault()
+    if (parsedPointValue === null) return
+    try {
+      savePointValueVnd(localStorage, parsedPointValue)
+      setPointValueVnd(parsedPointValue)
+      setSettingsOpen(false)
+    } catch {
+      setSettingsError('Không thể lưu quy đổi điểm trên thiết bị này.')
+    }
+  }
+
   function confirmDelete() {
     try {
       clearGameData(localStorage)
+      setPointValueVnd(DEFAULT_POINT_VALUE_VND)
       setSelectedFeature(null)
       closeDelete()
     } catch {
@@ -144,19 +174,19 @@ export default function App() {
   return (
     <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-slate-50 text-slate-900 transition-colors dark:bg-zinc-950 dark:text-zinc-100">
       {page === 'addPlayers' ? (
-        <AddPlayersPage onCancel={() => setPage('main')} onSaved={() => setPage('main')} />
+        <AddPlayersPage pointValueVnd={pointValueVnd} onCancel={() => setPage('main')} onSaved={() => setPage('main')} />
       ) : page === 'playerInfo' ? (
-        <PlayerInfoPage onCancel={() => setPage('main')} onSaved={() => setPage('main')} />
+        <PlayerInfoPage pointValueVnd={pointValueVnd} onCancel={() => setPage('main')} onSaved={() => setPage('main')} />
       ) : page === 'endRound' ? (
-        <EndRoundPage onCancel={() => setPage('main')} onSaved={() => setPage('main')} />
+        <EndRoundPage pointValueVnd={pointValueVnd} onCancel={() => setPage('main')} onSaved={() => setPage('main')} />
       ) : page === 'roundHistory' ? (
         <RoundHistoryPage onBack={() => setPage('main')} />
       ) : page === 'ranking' ? (
-        <RankingPage onBack={() => setPage('main')} />
+        <RankingPage pointValueVnd={pointValueVnd} onBack={() => setPage('main')} />
       ) : (
       <>
       <header className="shrink-0 border-b border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto max-w-5xl px-4 py-3 sm:px-6">
+        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-3">
           <button
             type="button"
@@ -214,11 +244,20 @@ export default function App() {
         </div>
       </header>
 
-      <main data-page-scroll className="mx-auto min-h-0 w-full max-w-5xl flex-1 overflow-y-auto overscroll-contain px-4 pb-12 pt-6 sm:px-6 sm:pt-10">
+      <main data-page-scroll className="min-h-0 w-full flex-1 overflow-y-auto overscroll-contain">
+        <div className="mx-auto w-full max-w-7xl px-4 pb-12 pt-6 sm:px-6 sm:pt-10 lg:px-8">
         <div className="mb-6 sm:mb-8">
           <h2 className="text-xl font-semibold sm:text-2xl">Bàn của bạn</h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-zinc-400">Theo dõi người chơi và từng ván bài.</p>
         </div>
+
+        <button ref={settingsButton} type="button" onClick={openSettings} className="mb-6 flex min-h-16 w-full items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-4 py-3 text-left hover:border-emerald-500 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-500 dark:hover:bg-zinc-800 sm:mb-8">
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold">Quy đổi điểm</span>
+            <span className="mt-0.5 block text-sm text-slate-600 dark:text-zinc-300">1 điểm = {formatVnd(pointValueVnd)}</span>
+          </span>
+          <span aria-hidden="true" className="shrink-0 text-xl text-slate-400 dark:text-zinc-500">›</span>
+        </button>
 
         <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
           {features.map((feature, index) => {
@@ -252,7 +291,31 @@ export default function App() {
             )
           })}
         </div>
+        </div>
       </main>
+      {settingsOpen && (
+        <Dialog onClose={() => setSettingsOpen(false)} triggerRef={settingsButton} title="Quy đổi điểm" closeAriaLabel="Đóng quy đổi điểm" footer={
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => setSettingsOpen(false)} className="min-h-11 rounded-md border border-slate-300 bg-white px-3 font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700">Cancel</button>
+            <button type="submit" form="point-value-form" disabled={parsedPointValue === null} className="min-h-11 rounded-md bg-emerald-700 px-3 font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 dark:bg-emerald-500 dark:text-zinc-950 dark:hover:bg-emerald-400 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-400">Lưu</button>
+          </div>
+        }>
+          <form id="point-value-form" onSubmit={saveSettings} noValidate>
+            <label htmlFor="point-value-input" className="block font-semibold text-slate-900 dark:text-zinc-100">Giá trị của 1 điểm bằng VNĐ</label>
+            <div className="mt-2 flex items-center gap-3">
+              <span className="shrink-0">1 điểm =</span>
+              <input id="point-value-input" type="text" inputMode="numeric" autoComplete="off" value={pointValueFocused ? pointValueDraft : parsedPointValue === null ? pointValueDraft : formatVndNumber(parsedPointValue)} onChange={(event) => { setPointValueDraft(event.target.value); setSettingsError('') }} onFocus={() => setPointValueFocused(true)} onBlur={() => setPointValueFocused(false)} aria-invalid={parsedPointValue === null} aria-describedby={parsedPointValue === null ? 'point-value-error' : undefined} className={`h-11 min-w-0 flex-1 rounded-md border bg-white px-3 text-base font-semibold tabular-nums text-slate-900 outline-none focus:ring-2 dark:bg-zinc-950 dark:text-zinc-100 ${parsedPointValue === null ? 'border-rose-600 focus:ring-rose-100 dark:border-rose-400 dark:focus:ring-rose-900/40' : 'border-slate-300 focus:border-emerald-600 focus:ring-emerald-100 dark:border-zinc-600 dark:focus:border-emerald-400 dark:focus:ring-emerald-900/40'}`} />
+              <span className="shrink-0 font-medium">VNĐ</span>
+            </div>
+            {parsedPointValue === null && <p id="point-value-error" className="mt-2 text-xs font-medium text-rose-700 dark:text-rose-300">Vui lòng nhập số nguyên lớn hơn 0.</p>}
+            <p className="mt-5 font-semibold text-slate-900 dark:text-zinc-100">Chọn nhanh</p>
+            <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {POINT_VALUE_PRESETS.map((preset) => <button key={preset} type="button" aria-pressed={parsedPointValue === preset} onClick={() => { setPointValueDraft(String(preset)); setSettingsError('') }} className={`min-h-11 rounded-md border px-2 text-sm font-semibold tabular-nums focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 ${parsedPointValue === preset ? 'border-emerald-600 bg-emerald-50 text-emerald-800 dark:border-emerald-400 dark:bg-emerald-950/40 dark:text-emerald-300' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700'}`}>{formatVndNumber(preset)}</button>)}
+            </div>
+            {settingsError && <p role="alert" className="mt-3 text-sm font-medium text-rose-700 dark:text-rose-300">{settingsError}</p>}
+          </form>
+        </Dialog>
+      )}
       {comingSoonOpen && (
         <Dialog onClose={() => setComingSoonOpen(false)} triggerRef={gameButton} title="Tiến Lên" closeAriaLabel="Đóng thông báo Tiến Lên">
           <p className="font-semibold text-slate-900 dark:text-zinc-100">Tính năng đang được phát triển.</p>

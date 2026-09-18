@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
-import Dialog from './Dialog.jsx'
-import { formatRoundDate, formatSignedPoint, getPlayerHistoryPoints, loadRoundHistory } from './history.js'
-import { parseSavedPlayers } from './players.js'
-import { sortPlayersByPoints } from './ranking.js'
+import { useEffect, useRef, useState } from 'react'
+import Dialog from '../../components/ui/Dialog.jsx'
+import { formatRoundDate, formatSignedPoint, getPlayerHistoryPoints, loadRoundHistory } from '../history/history.js'
+import { parseSavedPlayers } from '../players/players.js'
+import { buildRankingText, formatPointMoneyK, getRankingChartLayout, RANKING_CHART, sortPlayersByPoints } from './ranking.js'
+import { downloadRankingPng } from './rankingExport.js'
 
 function loadPlayers() {
   try {
@@ -18,33 +19,29 @@ function pointColor(value) {
   return 'text-slate-600 dark:text-zinc-300'
 }
 
-function RankingChart({ players }) {
+function RankingChart({ players, pointValueVnd }) {
   const [selectedId, setSelectedId] = useState(null)
   const selected = players.find((player) => player.id === selectedId)
-  const low = Math.min(0, ...players.map((player) => player.totalPoints))
-  const high = Math.max(0, ...players.map((player) => player.totalPoints))
-  const domainLow = low === high ? -1 : low
-  const domainHigh = low === high ? 1 : high
-  const top = 20
-  const plotHeight = 180
-  const y = (value) => top + (domainHigh - value) / (domainHigh - domainLow) * plotHeight
-  const zeroY = y(0)
+  const { low, high, y, zeroY, width } = getRankingChartLayout(players)
 
   return (
     <div>
       <div role="group" aria-label="Biểu đồ điểm hiện tại theo thứ tự tăng dần" className="overflow-x-auto overscroll-x-contain border-b border-slate-200 dark:border-zinc-700">
-        <div className="relative grid h-[284px]" style={{ width: Math.max(300, 40 + players.length * 72), minWidth: '100%', gridTemplateColumns: `40px repeat(${players.length}, minmax(72px, 1fr))` }}>
+        <div className="relative grid h-[284px]" style={{ width, minWidth: '100%', gridTemplateColumns: `${RANKING_CHART.axisWidth}px repeat(${players.length}, minmax(${RANKING_CHART.slotWidth}px, 1fr))` }}>
           <div className="relative text-right text-[11px] font-medium tabular-nums text-slate-500 dark:text-zinc-400">
-            {high !== 0 && <span className="absolute right-1 top-2">{formatSignedPoint(high)}</span>}
+            <span className="absolute right-1 top-0">Điểm</span>
+            {high !== 0 && <span className="absolute right-1" style={{ top: y(high) - 8 }}>{formatSignedPoint(high)}</span>}
             <span className="absolute right-1" style={{ top: zeroY - 8 }}>0</span>
-            {low !== 0 && <span className="absolute bottom-[77px] right-1">{formatSignedPoint(low)}</span>}
+            {low !== 0 && <span className="absolute right-1" style={{ top: y(low) - 8 }}>{formatSignedPoint(low)}</span>}
           </div>
-          <span aria-hidden="true" className="pointer-events-none absolute right-0 border-t-2 border-slate-500 dark:border-zinc-400" style={{ left: 40, top: zeroY }} />
+          <span aria-hidden="true" className="pointer-events-none absolute right-0 border-t-2 border-slate-500 dark:border-zinc-400" style={{ left: RANKING_CHART.axisWidth, top: zeroY }} />
           {players.map((player) => {
             const pointY = y(player.totalPoints)
             const barTop = player.totalPoints === 0 ? zeroY - 2 : Math.min(pointY, zeroY)
             const barHeight = player.totalPoints === 0 ? 4 : Math.abs(pointY - zeroY)
             const barColor = player.totalPoints > 0 ? 'bg-emerald-600 dark:bg-emerald-400' : player.totalPoints < 0 ? 'bg-rose-600 dark:bg-rose-400' : 'bg-slate-500 dark:bg-zinc-300'
+            const money = formatPointMoneyK(player.totalPoints, pointValueVnd)
+            const tooltip = `${player.name}: Điểm: ${formatSignedPoint(player.totalPoints)}, Quy đổi: ${money}, ${player.active ? 'Đang chơi' : 'Đã nghỉ'}`
             return (
               <button
                 key={player.id}
@@ -52,13 +49,13 @@ function RankingChart({ players }) {
                 onClick={() => setSelectedId(player.id)}
                 onFocus={() => setSelectedId(player.id)}
                 onMouseEnter={() => setSelectedId(player.id)}
-                aria-label={`${player.name}: ${formatSignedPoint(player.totalPoints)} điểm, ${player.active ? 'Đang chơi' : 'Đã nghỉ'}`}
-                title={`${player.name}: ${formatSignedPoint(player.totalPoints)} điểm, ${player.active ? 'Đang chơi' : 'Đã nghỉ'}`}
+                aria-label={tooltip}
+                title={tooltip}
                 className="relative h-[284px] min-w-0 px-1 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-emerald-600"
               >
                 <span aria-hidden="true" className={`absolute left-1/2 w-8 -translate-x-1/2 rounded-t-sm ${barColor}`} style={{ top: barTop, height: barHeight }} />
                 <span className="absolute inset-x-1 top-[220px] block truncate text-xs font-medium text-slate-800 dark:text-zinc-200">{player.name}</span>
-                <span className={`absolute inset-x-1 top-[242px] block text-xs font-semibold tabular-nums ${pointColor(player.totalPoints)}`}>{formatSignedPoint(player.totalPoints)}</span>
+                <span className={`absolute inset-x-1 top-[242px] block truncate text-xs font-semibold tabular-nums ${pointColor(player.totalPoints)}`}>{money}</span>
               </button>
             )
           })}
@@ -66,7 +63,7 @@ function RankingChart({ players }) {
       </div>
       {selected && (
         <p aria-live="polite" className="mt-3 text-sm text-slate-700 dark:text-zinc-200">
-          <span className="font-semibold">{selected.name}</span> · {formatSignedPoint(selected.totalPoints)} điểm · {selected.active ? 'Đang chơi' : 'Đã nghỉ'}
+          <span className="font-semibold">{selected.name}</span> · Điểm: {formatSignedPoint(selected.totalPoints)} · Quy đổi: {formatPointMoneyK(selected.totalPoints, pointValueVnd)} · {selected.active ? 'Đang chơi' : 'Đã nghỉ'}
         </p>
       )}
     </div>
@@ -136,14 +133,48 @@ function PlayerLineChart({ player, points }) {
   )
 }
 
-export default function RankingPage({ onBack }) {
+export default function RankingPage({ pointValueVnd, onBack }) {
   const [players] = useState(loadPlayers)
   const [history] = useState(loadRoundHistory)
   const [tab, setTab] = useState('ranking')
   const [selectedPlayer, setSelectedPlayer] = useState(null)
+  const [outputType, setOutputType] = useState('text')
+  const [feedback, setFeedback] = useState('')
+  const [downloadBusy, setDownloadBusy] = useState(false)
   const selectedTrigger = useRef(null)
+  const feedbackTimer = useRef(null)
   const ranked = sortPlayersByPoints(players)
   const points = selectedPlayer ? getPlayerHistoryPoints(history, selectedPlayer.id) : []
+
+  useEffect(() => () => window.clearTimeout(feedbackTimer.current), [])
+
+  function showFeedback(message) {
+    window.clearTimeout(feedbackTimer.current)
+    setFeedback(message)
+    feedbackTimer.current = window.setTimeout(() => setFeedback(''), 2500)
+  }
+
+  async function handleOutput() {
+    if (ranked.length === 0 || downloadBusy) return
+    if (outputType === 'text') {
+      try {
+        await navigator.clipboard.writeText(buildRankingText(ranked, pointValueVnd))
+        showFeedback('Đã copy')
+      } catch {
+        showFeedback('Không thể copy. Vui lòng thử lại.')
+      }
+      return
+    }
+    setDownloadBusy(true)
+    try {
+      await downloadRankingPng(ranked, pointValueVnd, document.documentElement.classList.contains('dark'))
+      showFeedback('Đã tải ảnh')
+    } catch {
+      showFeedback('Không thể tải ảnh. Vui lòng thử lại.')
+    } finally {
+      setDownloadBusy(false)
+    }
+  }
 
   function openPlayer(player, trigger) {
     selectedTrigger.current = trigger
@@ -166,10 +197,29 @@ export default function RankingPage({ onBack }) {
         </div>
 
         <div id="ranking-panel" role="tabpanel" className="mt-5">
-          {players.length === 0 ? (
+          {tab === 'ranking' ? (
+            <>
+              <div className="mb-5 flex flex-wrap items-end gap-3 border-b border-slate-200 pb-4 dark:border-zinc-700">
+                <fieldset className="flex min-w-0 flex-1 flex-wrap items-center gap-x-5 gap-y-2">
+                  <legend className="mb-2 text-sm font-semibold text-slate-700 dark:text-zinc-200">Định dạng</legend>
+                  <label className="flex min-h-11 items-center gap-2 text-sm text-slate-700 dark:text-zinc-200">
+                    <input type="radio" name="ranking-output" value="text" checked={outputType === 'text'} disabled={downloadBusy} onChange={() => { setOutputType('text'); setFeedback('') }} className="size-4 accent-emerald-700 dark:accent-emerald-400" />
+                    Văn bản
+                  </label>
+                  <label className="flex min-h-11 items-center gap-2 text-sm text-slate-700 dark:text-zinc-200">
+                    <input type="radio" name="ranking-output" value="image" checked={outputType === 'image'} disabled={downloadBusy} onChange={() => { setOutputType('image'); setFeedback('') }} className="size-4 accent-emerald-700 dark:accent-emerald-400" />
+                    Hình ảnh
+                  </label>
+                </fieldset>
+                <button type="button" disabled={downloadBusy || ranked.length === 0} onClick={handleOutput} className="min-h-11 w-full rounded-md bg-emerald-700 px-5 text-sm font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 dark:bg-emerald-500 dark:text-zinc-950 dark:hover:bg-emerald-400 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-400 sm:w-auto">{downloadBusy ? 'Đang tạo ảnh...' : outputType === 'text' ? 'Copy' : 'Download'}</button>
+              </div>
+              {feedback && <p role="status" className="mb-4 text-sm font-medium text-slate-700 dark:text-zinc-200">{feedback}</p>}
+              {players.length === 0 ? (
+                <p className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">Chưa có dữ liệu người chơi.</p>
+              ) : <RankingChart players={ranked} pointValueVnd={pointValueVnd} />}
+            </>
+          ) : players.length === 0 ? (
             <p className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">Chưa có dữ liệu người chơi.</p>
-          ) : tab === 'ranking' ? (
-            <RankingChart players={ranked} />
           ) : (
             <div className="space-y-3">
               {players.map((player) => (

@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
-import Dialog, { HelpButton } from './Dialog.jsx'
-import { createRoundHistory, formatSignedPoint, saveCompletedRound } from './history.js'
-import { parsePointInput, parseSavedPlayers } from './players.js'
+import Dialog, { HelpButton } from '../../components/ui/Dialog.jsx'
+import { formatVnd } from '../settings/gameSettings.js'
+import { createRoundHistory, formatSignedPoint, saveCompletedRound } from '../history/history.js'
+import { parsePointInput, parseSavedPlayers } from '../players/players.js'
 import { calculateRound } from './round.js'
 
 function loadPlayers() {
@@ -12,7 +13,7 @@ function loadPlayers() {
   }
 }
 
-export default function EndRoundPage({ onCancel, onSaved }) {
+export default function EndRoundPage({ pointValueVnd, onCancel, onSaved }) {
   const [players] = useState(loadPlayers)
   const roundPlayers = players.filter((player) => player.active && player.role === 'player')
   const [pointDrafts, setPointDrafts] = useState(() => Object.fromEntries(
@@ -113,7 +114,7 @@ export default function EndRoundPage({ onCancel, onSaved }) {
         {result.error === 'balance' && <p role="status" className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">Tổng điểm sau ván sẽ là {formatSignedPoint(result.projectedTotal)}. Không thể kết thúc ván vì tổng điểm của tất cả người chơi phải bằng 0. Hãy kiểm tra lại thông tin người chơi.</p>}
         {result.error === 'range' && <p role="status" className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-3 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100">Tổng điểm vượt quá phạm vi số nguyên hợp lệ. Hãy giảm điểm của ván này.</p>}
         {saveError && <p role="alert" className="mt-4 text-sm font-medium text-rose-700 dark:text-rose-300">{saveError}</p>}
-        <p className="mt-4 text-center text-xs text-slate-500 dark:text-zinc-400">1 điểm = 1.000đ</p>
+        <p className="mt-4 text-center text-xs text-slate-500 dark:text-zinc-400">1 điểm = {formatVnd(pointValueVnd)}</p>
       </main>
 
       <footer className="shrink-0 border-t border-slate-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900 sm:px-6">

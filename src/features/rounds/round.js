@@ -1,4 +1,4 @@
-import { parsePointInput, totalPoints } from './players.js'
+import { parsePointInput, totalPoints } from '../players/players.js'
 
 export function calculateRound(players, pointDrafts) {
   const roundPlayers = players.filter((player) => player.active && player.role === 'player')

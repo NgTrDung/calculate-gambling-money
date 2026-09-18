@@ -1,4 +1,4 @@
-import { parsePointInput } from './players.js'
+import { parsePointInput } from '../players/players.js'
 
 export const HISTORY_KEY = 'roundHistory'
 export const HISTORY_PAGE_SIZE = 5

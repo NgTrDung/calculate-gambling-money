@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatVnd } from '../settings/gameSettings.js'
 import { cleanName, createPlayer, getPlayerErrors, parseSavedPlayers, setHost } from './players.js'
 
 const errorMessages = {
@@ -15,7 +16,7 @@ function loadExistingPlayers() {
   }
 }
 
-export default function AddPlayersPage({ onCancel, onSaved }) {
+export default function AddPlayersPage({ pointValueVnd, onCancel, onSaved }) {
   const [existingPlayers, setExistingPlayers] = useState(loadExistingPlayers)
   const [newPlayers, setNewPlayers] = useState(() => [
     createPlayer(existingPlayers.some((player) => player.role === 'host') ? 'player' : 'host'),
@@ -148,7 +149,7 @@ export default function AddPlayersPage({ onCancel, onSaved }) {
         >
           + Thêm người chơi
         </button>
-        <p className="mt-4 text-center text-xs text-slate-500 dark:text-zinc-400">1 điểm = 1.000đ</p>
+        <p className="mt-4 text-center text-xs text-slate-500 dark:text-zinc-400">1 điểm = {formatVnd(pointValueVnd)}</p>
         {saveError && <p role="alert" className="mt-4 text-sm font-medium text-rose-700 dark:text-rose-300">{saveError}</p>}
       </main>
 
